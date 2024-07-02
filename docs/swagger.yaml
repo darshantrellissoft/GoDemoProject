@@ -1,0 +1,301 @@
+definitions:
+  models.Transaction:
+    properties:
+      amount:
+        type: number
+      card_number:
+        type: string
+      created_at:
+        type: string
+      cvv:
+        type: string
+      expiry_date:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      userId:
+        description: Foreign key to User model
+        type: integer
+    type: object
+  utils.AuthInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  utils.PaymentInput:
+    properties:
+      amount:
+        type: number
+      card_number:
+        type: string
+      cvv:
+        type: string
+      expiry_date:
+        type: string
+    required:
+    - amount
+    - card_number
+    - cvv
+    - expiry_date
+    type: object
+  utils.RegisterUserRequest:
+    properties:
+      ConfirmPassword:
+        type: string
+      companyName:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      password:
+        type: string
+    required:
+    - ConfirmPassword
+    - companyName
+    - email
+    - firstName
+    - lastName
+    - password
+    type: object
+  utils.UpdateUserInput:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: bdarshan@trellissoft.ai
+    name: 'API Support : Darshan'
+    url: http://www.swagger.io/support
+  description: This is a sample GO server demonstration of BASIC application.
+  license:
+    name: Darshan
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: MyTransactAPP APP
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: User credentials
+        in: body
+        name: auth
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AuthInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User registered successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "401":
+          description: Invalid credentials
+          schema:
+            type: string
+        "500":
+          description: Failed to generate token
+          schema:
+            type: string
+      summary: Log in a user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate the current user's token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User logged out successfully
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Logout user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user along with their company profile
+      parameters:
+      - description: User registration details
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/utils.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User registered successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+      summary: Register a new user with company profile
+      tags:
+      - auth
+  /payments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new payment
+      parameters:
+      - description: Payment details
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/utils.PaymentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment created successfully, confirmation email sent
+          schema:
+            type: string
+        "400":
+          description: Invalid payload
+          schema:
+            type: string
+        "500":
+          description: Failed to create payment
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new payment
+      tags:
+      - payment
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get transaction details by transaction ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "404":
+          description: Transaction not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get transaction details
+      tags:
+      - payment
+  /payments/confirm/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Confirm a payment by transaction ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment confirmed successfully
+          schema:
+            type: string
+        "404":
+          description: Payment not found
+          schema:
+            type: string
+        "500":
+          description: Failed to update payment status
+          schema:
+            type: string
+      summary: Confirm a payment
+      tags:
+      - payment
+  /user/update:
+    put:
+      consumes:
+      - application/json
+      description: Update the user's first name and last name
+      parameters:
+      - description: User details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/utils.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update user details
+      tags:
+      - user
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
